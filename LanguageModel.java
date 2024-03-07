@@ -73,35 +73,38 @@ public class LanguageModel {
 
     // Computes and sets the probabilities (p and cp fields) of all the
 	// characters in the given list. */
-	public void calculateProbabilities(List probs) {
-        double sum = 0;	
-        ListIterator listIt = probs.listIterator(0);		
-		while (listIt.hasNext()) {
-            sum += listIt.next().count;
-        }
-        if (sum == 0) return;
-        listIt = probs.listIterator(0);
-        double cpCount = 0;
+    public void calculateProbabilities(List probs) {
+        double sum = 0;
+        ListIterator listIt = probs.listIterator(0);
         while (listIt.hasNext()) {
             CharData data = listIt.next();
-            data.p = data.count/sum;
-            cpCount+= data.p;
-            data.cp= cpCount;
-        }  
-	}
+            sum += data.count;
+        }
+        if (sum == 0) return; // Prevent division by zero
+        double cumulative = 0;
+        listIt = probs.listIterator(0); // Reset iterator
+        while (listIt.hasNext()) {
+            CharData data = listIt.next();
+            data.p = data.count / sum;
+            cumulative += data.p;
+            data.cp = cumulative;
+        }
+    }
+    
 
     // Returns a random character from the given probabilities list.
-	public char getRandomChar(List probs) {
-		double r = Math.random();
+    public char getRandomChar(List probs) {
+        double r = Math.random();
         ListIterator listIt = probs.listIterator(0);
         while (listIt.hasNext()) {
             CharData data = listIt.next();
             if (data.cp > r) {
-                return data.chr;
+                return data.chr; // Correct character selection based on 'cp'
             }
         }
-        return '_';        
-	}
+        return '_';
+    }
+    
 
     /**
 	 * Generates a random text, based on the probabilities that were learned during training. 
