@@ -29,9 +29,7 @@ public class CharData {
 	}
 	
 	/** Returns a textual representation of this CharData object. */
-    @Override
-    public String toString() {
-        // Adjust the format to match the expected output
-        return String.format("(%c %d %.4f %.4f)", chr, count, p, cp);
-    }
+	public String toString() {
+		return "(" + chr + " " + count + " " + p + " " + cp + ")";
+	}
 }

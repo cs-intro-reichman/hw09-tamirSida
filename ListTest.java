@@ -1,9 +1,9 @@
 import java.util.Arrays;
 import java.util.LinkedList;
 
-public class ListTester {
+public class ListTest {
     public static void main(String[] args) {
-        String methodName = args[0];
+        String methodName = "update";
         boolean result = false;
         switch (methodName) {
             case "addFirst":
@@ -257,4 +257,5 @@ public class ListTester {
         return true;
     }
     
+
 }
