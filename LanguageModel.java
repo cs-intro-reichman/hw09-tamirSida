@@ -76,34 +76,39 @@ public class LanguageModel {
     public void calculateProbabilities(List probs) {
         double sum = 0;
         ListIterator listIt = probs.listIterator(0);
+        // First pass: Calculate the sum of all counts
         while (listIt.hasNext()) {
-            CharData data = listIt.next();
-            sum += data.count;
+            sum += listIt.next().count;
         }
         if (sum == 0) return; // Prevent division by zero
+        
+        // Reset iterator for second pass
+        listIt = probs.listIterator(0);
         double cumulative = 0;
-        listIt = probs.listIterator(0); // Reset iterator
+        // Second pass: Calculate probabilities and cumulative probabilities
         while (listIt.hasNext()) {
             CharData data = listIt.next();
-            data.p = data.count / sum;
-            cumulative += data.p;
-            data.cp = cumulative;
+            data.p = data.count / sum; // Probability
+            cumulative += data.p; // Cumulative probability
+            data.cp = cumulative; // Assign cumulative probability
         }
     }
+    
     
 
     // Returns a random character from the given probabilities list.
     public char getRandomChar(List probs) {
-        double r = Math.random();
+        double r = randomGenerator.nextDouble(); // Use the class's Random instance
         ListIterator listIt = probs.listIterator(0);
         while (listIt.hasNext()) {
             CharData data = listIt.next();
             if (data.cp > r) {
-                return data.chr; // Correct character selection based on 'cp'
+                return data.chr;
             }
         }
-        return '_';
+        return '_'; // Fallback or handle this case as needed
     }
+    
     
 
     /**
