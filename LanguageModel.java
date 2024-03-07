@@ -32,68 +32,64 @@ public class LanguageModel {
     }
 
     /** Builds a language model from the text in the given file (the corpus). */
-    public void train(String fileName) {
+	public void train(String fileName) {
         String window = "";
+        char character;
         In in = new In(fileName);
-        // Reads just enough characters to form the first window
-        while (window.length() < windowLength && !in.isEmpty()) {
-            window += in.readChar();
+        for (int i = 0; i < windowLength; i++) {
+            window = window + in.readChar();
         }
-        
-        // Processes the entire text, one character at a time
-        while (!in.isEmpty() && window.length() == windowLength) {
-            char c = in.isEmpty() ? ' ' : in.readChar(); // Handle file end or read next char
-            List probs = CharDataMap.getOrDefault(window, new List());
-            probs.update(c);
-            CharDataMap.put(window, probs);
-            
-            // Update window for the next iteration
-            window = window.substring(1) + c;
+        while (!(in.isEmpty())) {
+            character = in.readChar();
+            List probs = CharDataMap.get(window);
+            if (probs == null){
+                probs = new List();
+                CharDataMap.put(window, probs);
+            }
+            probs.update(character);
+            window = window + character;
+            window = window.substring(1);
         }
-        
-        // Compute probabilities after training
-        CharDataMap.values().forEach(this::calculateProbabilities);
-    }
-    
+        for (List probs : CharDataMap.values())
+            calculateProbabilities(probs);
+		// Your code goes here
+	}
 
     // Computes and sets the probabilities (p and cp fields) of all the
 	// characters in the given list. */
-    public void calculateProbabilities(List probs) {
-        double sum = 0;
-        ListIterator listIt = probs.listIterator(0);
-        while (listIt.hasNext()) {
-            CharData data = listIt.next();
-            sum += data.count;
+	public void calculateProbabilities(List probs) {
+        int numOfChars = 0;
+        for (int i = 0; i < probs.getSize(); i++){
+            numOfChars = numOfChars + probs.get(i).count;
         }
-        if (sum == 0) return; // Prevent division by zero
-        
-        double cumulativeProbability = 0;
-        listIt = probs.listIterator(0); // Reset the iterator
-        while (listIt.hasNext()) {
-            CharData data = listIt.next();
-            data.p = data.count / sum;
-            cumulativeProbability += data.p;
-            data.cp = cumulativeProbability;
+        CharData first = probs.get(0);
+        Double firstP = first.count / (double)numOfChars;
+        first.p = firstP;
+        first.cp = firstP;
+
+        CharData prev = first;
+        CharData current = null;
+        for (int i = 1; i < probs.getSize(); i++) {
+            current = probs.get(i);
+            double p = current.count / (double)numOfChars;
+            current.p = p;
+            current.cp = prev.cp + p;
+            prev = current;
         }
-    }
-    
-    
-    
+	}
 
     // Returns a random character from the given probabilities list.
-    public char getRandomChar(List probs) {
-        double r = randomGenerator.nextDouble(); // Use the class's Random instance
-        ListIterator listIt = probs.listIterator(0);
-        while (listIt.hasNext()) {
-            CharData data = listIt.next();
-            if (data.cp > r) {
-                return data.chr;
+	public char getRandomChar(List probs) {
+        double rnd = randomGenerator.nextDouble();
+        int listSize = probs.getSize();
+        for (int i = 0; i < listSize; i++) {
+            CharData currentCharData = probs.get(i);
+            if (currentCharData.cp > rnd) {
+                return  currentCharData.chr;
             }
         }
-        return '_'; // Fallback or handle this case as needed
-    }
-    
-    
+        return probs.get(listSize - 1).chr;
+	}
 
     /**
 	 * Generates a random text, based on the probabilities that were learned during training. 
@@ -102,23 +98,25 @@ public class LanguageModel {
 	 * @param numberOfLetters - the size of text to generate
 	 * @return the generated text
 	 */
-    public String generate(String initialText, int textLength) {
-        if (initialText.length() < windowLength) return initialText;
-        
-        StringBuilder generatedText = new StringBuilder(initialText);
-        while (generatedText.length() < textLength) {
-            String currentWindow = generatedText.substring(generatedText.length() - windowLength);
-            List probs = CharDataMap.get(currentWindow);
-            if (probs == null) break;
-            
-            char nextChar = getRandomChar(probs);
-            generatedText.append(nextChar);
+	public String generate(String initialText, int textLength) {
+        if (initialText.length() < windowLength){
+            return initialText;
         }
-        
-        return generatedText.toString();
-    }
-    
-    
+        String window = initialText.substring(initialText.length() - windowLength);
+        String genText = window;
+        for (int i = 0; i < textLength; i++) {
+            List probs = CharDataMap.get(window);
+            if(probs != null){
+                char newChr = getRandomChar(probs);
+                genText = genText + newChr;
+                window = genText.substring(genText.length() - windowLength);
+            }
+            else {
+                return genText;
+            }
+        }
+        return genText;
+	}
 
     /** Returns a string representing the map of this language model. */
 	public String toString() {
