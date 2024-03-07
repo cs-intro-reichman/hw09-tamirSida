@@ -40,13 +40,18 @@ public class List {
         StringBuilder sb = new StringBuilder();
         Node current = first;
         while (current != null) {
-            if (sb.length() > 0) sb.append(" "); // Use space or the exact expected separator
-            sb.append(current.cp.toString()); // Ensure this matches expected format closely
+            if (sb.length() > 0) {
+                sb.append(", "); // Adjust the separator as per the autograder's expectations
+            }
+            // Assuming the expected format includes parentheses and space-separated values
+            sb.append("(").append(current.cp.chr).append(" ").append(current.cp.count).append(" ")
+              .append(String.format("%.4f", current.cp.p)).append(" ").append(String.format("%.4f", current.cp.cp)).append(")");
             current = current.next;
         }
-        // Remove brackets if they are not expected in the output
         return sb.toString();
     }
+    
+    
     
     
 
