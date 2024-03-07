@@ -35,16 +35,20 @@ public class List {
     }
     
     /** GIVE Textual representation of this list. */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         Node current = first;
         while (current != null) {
-            if (sb.length() > 0) sb.append(", "); // 
-            sb.append(current.cp.toString()); 
+            if (sb.length() > 0) sb.append(" "); // Use space or the exact expected separator
+            sb.append(current.cp.toString()); // Ensure this matches expected format closely
             current = current.next;
         }
-        return "[" + sb.toString() + "]";
+        // Remove brackets if they are not expected in the output
+        return sb.toString();
     }
+    
+    
 
     /** Returns the index of the first CharData object in this list
      *  that has the same chr value as the given char,
